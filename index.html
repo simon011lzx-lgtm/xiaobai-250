@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>小白的第250天</title>
+<!-- Fonts load without blocking: if Google Fonts is unreachable in China, the page uses system fonts. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;700&display=swap" media="print" onload="this.media='all'">
+<style>
+/* Layout: one long love letter on paper, read on her phone. Pink = days in the same city, Thames blue = days apart. */
+:root {
+  --paper: #fbf7f5;
+  --paper-2: #f4ece9;
+  --ink: #2c2830;
+  --ink-soft: #6f6670;
+  --rose: #df7f92;
+  --rose-soft: #f6dbe0;
+  --thames: #46638c;
+  --thames-soft: #dbe3ee;
+  --wood-a: #e8c48e;
+  --wood-b: #dcb377;
+  --night: #121016;
+  --night-fg: #f7f2f3;
+  --go: #34c759;
+  --stop: #ff3b30;
+  --f-num: "Instrument Serif", "Times New Roman", serif;
+  --f-head: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --f-hand: "Ma Shan Zheng", "Kaiti SC", "STKaiti", cursive;
+  --f-body: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  color-scheme: light;
+}
+html { background: var(--paper); }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.75;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+.wrap {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+section { padding-block: 56px; }
+h2 {
+  font-family: var(--f-head); font-weight: 700; font-size: 26px; line-height: 1.35;
+  margin: 0 0 12px; text-wrap: balance;
+}
+.eyebrow {
+  font-family: var(--f-num); font-style: italic; font-size: 18px; color: var(--rose);
+  letter-spacing: .02em; margin-bottom: 6px;
+}
+p { margin: 0 0 14px; }
+.hand { font-family: var(--f-hand); font-size: 22px; line-height: 1.5; color: var(--ink); }
+.muted { color: var(--ink-soft); font-size: 14px; }
+img, video { max-width: 100%; display: block; }
+
+/* ---------- incoming call ---------- */
+#call {
+  position: fixed; inset: 0; z-index: 50; color: var(--night-fg); background: var(--night);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0px) + 72px) 24px calc(env(safe-area-inset-bottom, 0px) + 56px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+#call::before {
+  content: ""; position: absolute; inset: -40px; z-index: -1;
+  background: url(media/selfie.jpg) center/cover; filter: blur(34px) brightness(.45) saturate(1.2);
+}
+#call.gone { opacity: 0; transform: scale(1.04); pointer-events: none; }
+.caller { text-align: center; }
+.avatar {
+  width: 112px; height: 112px; border-radius: 50%; margin: 0 auto 18px;
+  background: url(media/selfie.jpg) 30% 30%/cover; border: 2px solid rgba(255,255,255,.5);
+}
+.caller .name { font-family: var(--f-head); font-size: 34px; font-weight: 700; letter-spacing: .04em; }
+.caller .sub { opacity: .75; font-size: 15px; margin-top: 4px; }
+.caller .clock { font-family: var(--f-num); font-size: 20px; opacity: .8; margin-top: 18px; font-variant-numeric: tabular-nums; }
+.call-btns { display: flex; gap: 88px; }
+.call-btns button {
+  width: 74px; height: 74px; border-radius: 50%; border: 0; color: #fff; cursor: pointer;
+  font-size: 13px; display: grid; place-items: center; position: relative;
+}
+.call-btns button span { position: absolute; top: 84px; white-space: nowrap; font-size: 14px; color: var(--night-fg); opacity: .85; }
+.call-btns svg { width: 30px; height: 30px; fill: #fff; }
+#decline { background: var(--stop); }
+#accept { background: var(--go); animation: ring 1.4s ease-in-out infinite; }
+@keyframes ring { 0%,100% { box-shadow: 0 0 0 0 rgba(52,199,89,.55); } 60% { box-shadow: 0 0 0 18px rgba(52,199,89,0); } }
+#nope { min-height: 28px; font-family: var(--f-hand); font-size: 22px; text-align: center; margin-bottom: 26px; }
+.shake { animation: shake .4s; }
+@keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+/* ---------- hero ---------- */
+.hero { padding-top: 64px; padding-bottom: 24px; text-align: left; }
+.hero .who { font-family: var(--f-hand); font-size: 26px; color: var(--rose); }
+.big {
+  font-family: var(--f-num); font-size: clamp(150px, 46vw, 230px); line-height: .82;
+  letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin: 18px 0 6px;
+  display: flex; align-items: flex-end; gap: 6px;
+}
+.big small { font-family: var(--f-hand); font-size: 44px; line-height: 1; margin-bottom: 18px; color: var(--rose); }
+.hero .lede { font-family: var(--f-head); font-size: 19px; line-height: 1.7; font-weight: 500; }
+.split {
+  display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin: 22px 0 8px; background: var(--thames-soft);
+}
+.split i { display: block; height: 100%; }
+.split .a { background: var(--rose); }
+.split .b { background: var(--thames); }
+.split-key { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.split-key b { font-weight: 600; }
+.k-rose { color: var(--rose); } .k-thames { color: var(--thames); }
+
+/* ---------- 277 dots ---------- */
+.grid {
+  display: grid; grid-template-columns: repeat(14, 1fr); gap: 5px; margin: 20px 0 14px;
+}
+.dot {
+  aspect-ratio: 1; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+  background: var(--thames); transition: transform .15s;
+}
+.dot.t { background: var(--rose); }
+.dot.f { background: transparent; box-shadow: inset 0 0 0 1.5px var(--thames-soft); }
+.dot.today { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
+.dot.goal { background: var(--rose); animation: beat 1.2s ease-in-out infinite; }
+.dot.mark { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--rose); }
+.dot.sel { transform: scale(1.5); }
+.dot:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+@keyframes beat { 0%,100% { transform: scale(1); } 30% { transform: scale(1.35); } 50% { transform: scale(1.05); } 70% { transform: scale(1.25); } }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-soft); }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.legend .lt::before { background: var(--rose); }
+.legend .la::before { background: var(--thames); }
+.legend .lf::before { box-shadow: inset 0 0 0 1.5px var(--thames); }
+.daycard {
+  margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--paper-2);
+  display: flex; gap: 14px; align-items: baseline; min-height: 64px;
+}
+.daycard .n { font-family: var(--f-num); font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; min-width: 2.2em; }
+.daycard .d { font-size: 13px; color: var(--ink-soft); }
+.daycard .w { font-family: var(--f-hand); font-size: 22px; line-height: 1.35; }
+
+/* ---------- clocks ---------- */
+.clocks { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0 18px; }
+.clock { padding: 16px; border-radius: 16px; }
+.clock.ldn { background: var(--thames); color: var(--night-fg); }
+.clock.sh { background: var(--rose-soft); color: var(--ink); }
+.clock .city { font-size: 13px; letter-spacing: .08em; opacity: .85; }
+.clock .time { font-family: var(--f-num); font-size: 46px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.clock .who2 { font-family: var(--f-hand); font-size: 18px; }
+.strip {
+  display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px;
+  margin-right: calc(-1 * max(20px, env(safe-area-inset-right, 0px)));
+}
+.strip img { width: 42%; flex: none; border-radius: 14px; scroll-snap-align: start; }
+
+/* ---------- chapters ---------- */
+.chapter-title { display: flex; align-items: baseline; gap: 12px; }
+.chapter-title .no { font-family: var(--f-num); font-size: 44px; line-height: 1; color: var(--rose); }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; align-items: start; }
+.duo > :nth-child(2) { margin-top: 36px; }
+.photo { border-radius: 4px; overflow: hidden; background: var(--paper-2); }
+.photo img, .photo video { width: 100%; height: 100%; object-fit: cover; }
+.wide { margin: 18px 0; border-radius: 4px; overflow: hidden; }
+.tilt { transform: rotate(-1.5deg); }
+.tilt-r { transform: rotate(1.8deg); }
+.note { margin-top: 6px; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 18px 0; }
+.trio .photo { aspect-ratio: 3/4; }
+.trio .photo:nth-child(2) { transform: translateY(18px); }
+.vids { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
+.vids .photo:first-child { grid-column: 1 / -1; }
+
+/* ---------- the visit ---------- */
+.visit { background: var(--thames); color: var(--night-fg); }
+.visit .eyebrow { color: var(--rose-soft); }
+.visit .hand { color: var(--night-fg); }
+.visit .muted { color: var(--thames-soft); }
+
+/* ---------- days matter ---------- */
+.wood {
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.035) 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(90deg, var(--wood-a) 0 64px, var(--wood-b) 64px 66px, var(--wood-a) 66px 130px);
+  padding-block: 56px;
+}
+.dm-title { font-family: var(--f-head); font-weight: 700; color: #8a5a1c; text-align: center; font-size: 22px; margin-bottom: 18px; }
+.dm-card {
+  position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 4/3; max-width: 100%;
+  box-shadow: 0 10px 30px rgba(90,55,10,.3); color: #fff; text-align: center;
+}
+.dm-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; filter: brightness(.8); }
+.dm-card .in { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 18px; }
+.dm-card .t { font-family: var(--f-head); font-size: 18px; font-weight: 700; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
+.dm-card .num { font-family: var(--f-body); font-weight: 800; font-size: clamp(96px, 30vw, 140px); line-height: 1; opacity: .92; font-variant-numeric: tabular-nums; }
+.dm-card .g { font-size: 15px; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
+.dm-tick { text-align: center; color: #6b4513; margin-top: 16px; font-variant-numeric: tabular-nums; }
+.dm-note { color: #4d3210; margin-top: 18px; }
+
+/* ---------- wishlist ---------- */
+.wish { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 10px; }
+.wish label {
+  display: flex; gap: 14px; align-items: center; padding: 16px; border-radius: 14px;
+  background: var(--paper-2); cursor: pointer; transition: background .2s;
+}
+.wish input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.wish .box {
+  flex: none; width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--rose);
+  display: grid; place-items: center; transition: background .2s;
+}
+.wish .box svg { width: 15px; height: 15px; fill: none; stroke: #fff; stroke-width: 3; opacity: 0; }
+.wish input:checked + .box { background: var(--rose); }
+.wish input:checked + .box svg { opacity: 1; }
+.wish input:checked ~ .txt { color: var(--ink-soft); }
+.wish input:focus-visible + .box { outline: 2px solid var(--ink); outline-offset: 3px; }
+.wish .txt { font-family: var(--f-head); font-size: 17px; font-weight: 500; line-height: 1.5; }
+.wish .txt small { display: block; font-family: var(--f-body); font-size: 13px; color: var(--ink-soft); font-weight: 400; }
+#wishDone { min-height: 32px; margin-top: 14px; color: var(--rose); }
+footer { padding-block: 40px 72px; text-align: center; }
+footer .hand { font-size: 26px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+
+<!-- incoming FaceTime -->
+<div id="call" role="dialog" aria-label="来电">
+  <div class="caller">
+    <div class="avatar" aria-hidden="true"></div>
+    <div class="name">小鸡毛</div>
+    <div class="sub">FaceTime 视频通话 · 来自伦敦</div>
+    <div class="clock" id="callClock">伦敦 00:08</div>
+  </div>
+  <div>
+    <div id="nope" aria-live="polite"></div>
+    <div class="call-btns">
+      <button id="decline" aria-label="拒绝">
+        <svg viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+        <span>拒绝</span>
+      </button>
+      <button id="accept" aria-label="接听">
+        <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        <span>接听</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <header class="wrap hero">
+    <div class="who">给小白 · 来自小鸡毛</div>
+    <div class="big" aria-label="250 天"><span id="bigNum">250</span><small>天</small></div>
+    <p class="lede">从 2026 年 2 月 26 日到 11 月 2 日，我们在一起 250 天了。</p>
+    <div class="split" aria-hidden="true"><i class="a" id="splitA"></i><i class="b" id="splitB"></i></div>
+    <div class="split-key">
+      <span><b class="k-rose" id="kTogether">183</b> 天在同一座城市</span>
+      <span><b class="k-thames" id="kApart">67</b> 天隔着 9,200 公里</span>
+    </div>
+  </header>
+
+  <section class="wrap" aria-labelledby="h-dots">
+    <div class="eyebrow">every single day</div>
+    <h2 id="h-dots">一颗点，就是一天</h2>
+    <p>粉色是我们在一起的日子，蓝色是我在伦敦想你的日子。最后那颗在跳的，是我回来的那天。点任意一颗看看。</p>
+    <div class="grid" id="grid" aria-label="277 天的日历"></div>
+    <div class="legend"><span class="lt">在一起</span><span class="la">伦敦 · 想你</span><span class="lf">还在数</span></div>
+    <div class="daycard" aria-live="polite">
+      <div class="n" id="dcN">250</div>
+      <div><div class="d" id="dcD">11月2日</div><div class="w" id="dcW">今天，给你做了这个网页</div></div>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-clock">
+    <div class="eyebrow">London · Shanghai</div>
+    <h2 id="h-clock">我们之间差 8 个小时</h2>
+    <div class="clocks">
+      <div class="clock ldn"><div class="city">LONDON</div><div class="time" id="tL">--:--</div><div class="who2">小鸡毛这边</div></div>
+      <div class="clock sh"><div class="city">上海</div><div class="time" id="tS">--:--</div><div class="who2">小白那边</div></div>
+    </div>
+    <div class="strip" tabindex="0" aria-label="FaceTime 截图">
+      <img src="media/ft1.jpg" alt="视频通话截图，小鸡毛抱着小狗玩偶" loading="lazy">
+      <img src="media/ft-cat.jpg" alt="视频通话截图，小白和猫" loading="lazy">
+      <img src="media/ft2.jpg" alt="视频通话截图" loading="lazy">
+      <img src="media/ft4.jpg" alt="视频通话截图，小白" loading="lazy">
+      <img src="media/ft3.jpg" alt="视频通话截图" loading="lazy">
+    </div>
+    <p class="hand note">那只戴蓝帽子的小狗，每次都陪我等你接电话。</p>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-c1">
+    <div class="chapter-title"><span class="no">i.</span><h2 id="h-c1">贴贴</h2></div>
+    <div class="wide tilt photo"><img src="media/selfie.jpg" alt="两个人的自拍" loading="lazy"></div>
+    <div class="duo">
+      <div class="photo"><img src="media/lean2.jpg" alt="小白靠在小鸡毛身上" loading="lazy"></div>
+      <div class="photo"><img src="media/lean1.jpg" alt="小白嘟嘴" loading="lazy"></div>
+    </div>
+    <div class="wide tilt-r photo"><img src="media/dinner.jpg" alt="一起吃饭" loading="lazy"></div>
+    <p class="hand">歪着头拍的每一张，我都存了好几遍。</p>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-c2">
+    <div class="chapter-title"><span class="no">ii.</span><h2 id="h-c2">生日那晚</h2></div>
+    <div class="duo">
+      <div class="photo"><img src="media/cake.jpg" alt="黄色裙子造型的生日蛋糕" loading="lazy"></div>
+      <div class="photo"><img src="media/wish.jpg" alt="小鸡毛对着蛋糕许愿" loading="lazy"></div>
+    </div>
+    <p class="hand">闭着眼睛许愿的时候，愿望里全是你。</p>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-c3">
+    <div class="chapter-title"><span class="no">iii.</span><h2 id="h-c3">你和猫猫</h2></div>
+    <div class="duo">
+      <div class="photo"><img src="media/cat1.jpg" alt="小白抱着猫" loading="lazy"></div>
+      <div class="photo"><img src="media/cat2.jpg" alt="猫看着镜头" loading="lazy"></div>
+    </div>
+    <p class="hand">它可以天天被你抱着，我有一点点羡慕。</p>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-c4">
+    <div class="chapter-title"><span class="no">iv.</span><h2 id="h-c4">没睡醒的小白</h2></div>
+    <div class="trio">
+      <div class="photo"><img src="media/sleepy1.jpg" alt="小白穿着睡衣" loading="lazy"></div>
+      <div class="photo"><img src="media/sleepy3.jpg" alt="小白闭着眼睛" loading="lazy"></div>
+      <div class="photo"><img src="media/sleepy2.jpg" alt="小白托着脸" loading="lazy"></div>
+    </div>
+    <p class="hand" style="margin-top:28px">穿着小狗睡衣的你，是我最想每天早上都看到的样子。</p>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-c5">
+    <div class="chapter-title"><span class="no">v.</span><h2 id="h-c5">会动的你</h2></div>
+    <div class="vids">
+      <div class="photo"><video src="media/clip3.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+      <div class="photo"><video src="media/clip1.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+      <div class="photo"><video src="media/clip2.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+    </div>
+  </section>
+
+  <section class="visit" aria-labelledby="h-visit">
+    <div class="wrap">
+      <div class="eyebrow">day 227 – 234</div>
+      <h2 id="h-visit">10 月 10 日，我回来了</h2>
+      <div class="duo">
+        <div class="photo"><img src="media/iphone.jpg" alt="机场里的 iPhone 18 Pro 包装盒" loading="lazy"></div>
+        <div class="photo"><img src="media/airport.jpg" alt="机场走廊" loading="lazy"></div>
+      </div>
+      <p>10 月 17 日，又走了一遍这条走廊。每次都是往离开你的方向走。</p>
+      <p class="hand">下一次，我是往你那边走。</p>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-flowers">
+    <div class="duo">
+      <div class="photo"><img src="media/rose1.jpg" alt="粉色玫瑰" loading="lazy"></div>
+      <div class="photo"><img src="media/rose2.jpg" alt="粉玫瑰和小雏菊" loading="lazy"></div>
+    </div>
+    <h2 id="h-flowers">250 天，一天都没有少爱你</h2>
+    <p>每个月飞回去一次，单程十几个小时。有人觉得很累，我觉得路上每一分钟都在离你更近。</p>
+  </section>
+
+  <section class="wood" aria-labelledby="h-dm">
+    <div class="wrap">
+      <div class="dm-title" id="h-dm">Days Matter</div>
+      <div class="dm-card">
+        <img src="media/lean3.jpg" alt="" loading="lazy">
+        <div class="in">
+          <div class="t">离见到小白老婆还有</div>
+          <div class="num" id="dmNum">27</div>
+          <div class="g" id="dmGoal">目标日: 2026-11-29 Sunday</div>
+        </div>
+      </div>
+      <div class="dm-tick" id="dmTick">&nbsp;</div>
+      <p class="dm-note">这是我手机里的倒计时，我每天都会打开看一次。到那一天，是我们在一起的第 277 天。</p>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-wish">
+    <div class="eyebrow">after day 277</div>
+    <h2 id="h-wish">见面以后，我们要一起做的事</h2>
+    <p>做完一件，就来这里勾掉一件。</p>
+    <ul class="wish">
+      <li><label for="w1"><input type="checkbox" id="w1"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">一起过圣诞节<small>今年的 12 月 25 日，不隔着屏幕</small></span></label></li>
+      <li><label for="w2"><input type="checkbox" id="w2"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛接小白下班<small>你一出门，就能看到我</small></span></label></li>
+      <li><label for="w3"><input type="checkbox" id="w3"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛给小白做可乐鸡翅<small>一整盘都是你的</small></span></label></li>
+      <li><label for="w4"><input type="checkbox" id="w4"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛送小白上班<small>早上八点，这次不是视频</small></span></label></li>
+    </ul>
+    <div class="hand" id="wishDone" aria-live="polite"></div>
+  </section>
+
+  <footer class="wrap">
+    <p class="hand">我爱你，小白。<br>第 250 天，写于伦敦。</p>
+    <p class="muted">小鸡毛</p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var DAY = 864e5;
+  var START = Date.UTC(2026, 1, 26);      // day 1
+  var LEAVE = 176;                        // Aug 20: flew to London
+  var VISIT = [227, 234];                 // Oct 10 – Oct 17
+  var GOAL = 277;                         // Nov 29: next time
+  var HERO = 250;
+  var notes = {
+    1: "第一天。从这里开始数",
+    100: "第 100 天",
+    175: "去伦敦前的最后一天",
+    176: "我飞去伦敦了",
+    227: "回来见你",
+    234: "又一次在机场说再见",
+    250: "今天，给你做了这个网页",
+    277: "见面"
+  };
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function shanghaiToday() {
+    var s = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    var p = s.split("-").map(Number);
+    return Date.UTC(p[0], p[1] - 1, p[2]);
+  }
+  function dayNo(utc) { return Math.round((utc - START) / DAY) + 1; }
+  function together(n) { return n < LEAVE || (n >= VISIT[0] && n <= VISIT[1]); }
+  function label(n) {
+    var d = new Date(START + (n - 1) * DAY);
+    return (d.getUTCMonth() + 1) + "月" + d.getUTCDate() + "日";
+  }
+  var today = dayNo(shanghaiToday());
+
+  // hero split (fixed at the 250-day mark)
+  var t = 0;
+  for (var i = 1; i <= HERO; i++) if (together(i)) t++;
+  document.getElementById("kTogether").textContent = t;
+  document.getElementById("kApart").textContent = HERO - t;
+  document.getElementById("splitA").style.width = (t / HERO * 100) + "%";
+  document.getElementById("splitB").style.width = ((HERO - t) / HERO * 100) + "%";
+
+  // dot grid
+  var grid = document.getElementById("grid");
+  var dcN = document.getElementById("dcN"), dcD = document.getElementById("dcD"), dcW = document.getElementById("dcW");
+  var sel = null;
+  function show(n, btn) {
+    if (sel) sel.classList.remove("sel");
+    sel = btn; btn.classList.add("sel");
+    dcN.textContent = n;
+    dcD.textContent = label(n) + (n === today ? " · 今天" : "");
+    var w = notes[n];
+    if (!w) {
+      if (n > today) w = "还没到，我在数";
+      else w = together(n) ? "在一起，在同一个城市" : "伦敦 · 想你";
+    }
+    dcW.textContent = w;
+  }
+  for (var n = 1; n <= GOAL; n++) {
+    var b = document.createElement("button");
+    b.className = "dot";
+    if (n === GOAL) b.classList.add("goal");
+    else if (n > today) b.classList.add("f");
+    else if (together(n)) b.classList.add("t");
+    if (n === today && n !== GOAL) b.classList.add("today");
+    else if (notes[n] && n !== GOAL) b.classList.add("mark");
+    b.setAttribute("aria-label", "第 " + n + " 天，" + label(n));
+    (function (n, b) { b.addEventListener("click", function () { show(n, b); }); })(n, b);
+    grid.appendChild(b);
+  }
+  var startDot = grid.children[Math.min(Math.max(today, 1), GOAL) - 1];
+  show(Math.min(Math.max(today, 1), GOAL), startDot);
+
+  // clocks
+  function hm(tz) {
+    return new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
+  }
+  function tickClocks() {
+    document.getElementById("tL").textContent = hm("Europe/London");
+    document.getElementById("tS").textContent = hm("Asia/Shanghai");
+    document.getElementById("callClock").textContent = "伦敦 " + hm("Europe/London") + " · 上海 " + hm("Asia/Shanghai");
+  }
+  tickClocks(); setInterval(tickClocks, 10000);
+
+  // Days Matter countdown
+  var GOAL_UTC = Date.UTC(2026, 10, 29);
+  var GOAL_MOMENT = Date.UTC(2026, 10, 28, 16, 0, 0); // Nov 29 00:00 in Shanghai
+  function tickDM() {
+    var left = Math.round((GOAL_UTC - shanghaiToday()) / DAY);
+    var num = document.getElementById("dmNum"), tick = document.getElementById("dmTick");
+    if (left > 0) {
+      num.textContent = left;
+      var ms = GOAL_MOMENT - Date.now();
+      var h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4), s = Math.floor(ms % 6e4 / 1e3);
+      tick.textContent = "也就是 " + h + " 小时 " + String(m).padStart(2, "0") + " 分 " + String(s).padStart(2, "0") + " 秒";
+    } else if (left === 0) {
+      num.textContent = "0";
+      tick.textContent = "就是今天。我到啦。";
+    } else {
+      num.textContent = "0";
+      tick.textContent = "已经见到啦。下一次倒计时，我们一起数。";
+    }
+  }
+  tickDM(); setInterval(tickDM, 1000);
+
+  // incoming call
+  var call = document.getElementById("call"), nope = document.getElementById("nope");
+  var lines = ["不可以挂断哦", "小鸡毛等了好久", "真的要挂吗", "接一下嘛"], li = 0;
+  document.getElementById("decline").addEventListener("click", function () {
+    nope.textContent = lines[li++ % lines.length];
+    nope.classList.remove("shake"); void nope.offsetWidth; nope.classList.add("shake");
+  });
+  document.getElementById("accept").addEventListener("click", function () {
+    call.classList.add("gone");
+    setTimeout(function () { call.hidden = true; }, 750);
+    window.scrollTo(0, 0);
+    countUp();
+  });
+  function countUp() {
+    var el = document.getElementById("bigNum");
+    if (reduce) { el.textContent = HERO; return; }
+    var t0 = null, dur = 2600;
+    function step(ts) {
+      if (t0 === null) t0 = ts;
+      var p = Math.min(1, (ts - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.max(1, Math.round(e * HERO));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    el.textContent = 1;
+    requestAnimationFrame(step);
+  }
+
+  // videos play when on screen
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) { var p = e.target.play(); if (p && p.catch) p.catch(function () {}); }
+        else e.target.pause();
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll("video").forEach(function (v) { io.observe(v); });
+  }
+
+  // wishlist, remembered on her phone
+  var KEY = "xiaobai-wish-v1", saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+  var boxes = document.querySelectorAll(".wish input");
+  function updateDone() {
+    var c = 0; boxes.forEach(function (b) { if (b.checked) c++; });
+    document.getElementById("wishDone").textContent =
+      c === boxes.length ? "全部做完了。那就再列一张新的。" : c > 0 ? "已经完成 " + c + " 件，还剩 " + (boxes.length - c) + " 件。" : "";
+  }
+  boxes.forEach(function (b) {
+    b.checked = !!saved[b.id];
+    b.addEventListener("change", function () {
+      saved[b.id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+      updateDone();
+    });
+  });
+  updateDone();
+})();
+</script>
+
+</body>
+</html>
