@@ -7,7 +7,8 @@
 <!-- Fonts load without blocking: if Google Fonts is unreachable in China, the page uses system fonts. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;700&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Layout: one long love letter on paper, read on her phone. Pink = days in the same city, Thames blue = days apart. */
+/* Layout: one long love letter on paper, read on her phone, told as six chapters along the timeline.
+   Pink = days in the same city, Thames blue = days apart. */
 :root {
   --paper: #fbf7f5;
   --paper-2: #f4ece9;
@@ -16,11 +17,14 @@
   --rose: #df7f92;
   --rose-soft: #f6dbe0;
   --thames: #46638c;
+  --thames-deep: #3a5478;
   --thames-soft: #dbe3ee;
   --wood-a: #e8c48e;
   --wood-b: #dcb377;
   --night: #121016;
   --night-fg: #f7f2f3;
+  --card: #ffffff;
+  --f-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
   --go: #34c759;
   --stop: #ff3b30;
   --f-num: "Instrument Serif", "Times New Roman", serif;
@@ -31,7 +35,7 @@
 }
 html { background: var(--paper); }
 body {
-  background: var(--paper); color: var(--ink);
+  margin: 0; background: var(--paper); color: var(--ink);
   font-family: var(--f-body); font-size: 16px; line-height: 1.75;
   -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
@@ -40,19 +44,53 @@ body {
   padding-left: max(20px, env(safe-area-inset-left, 0px));
   padding-right: max(20px, env(safe-area-inset-right, 0px));
 }
-section { padding-block: 56px; }
+section { padding-block: 48px; }
 h2 {
   font-family: var(--f-head); font-weight: 700; font-size: 26px; line-height: 1.35;
   margin: 0 0 12px; text-wrap: balance;
 }
+h3 {
+  font-family: var(--f-head); font-weight: 500; font-size: 18px; margin: 40px 0 4px;
+  display: flex; align-items: center; gap: 10px;
+}
+h3::after { content: ""; flex: 1; height: 1px; background: currentColor; opacity: .18; }
 .eyebrow {
   font-family: var(--f-num); font-style: italic; font-size: 18px; color: var(--rose);
   letter-spacing: .02em; margin-bottom: 6px;
 }
 p { margin: 0 0 14px; }
-.hand { font-family: var(--f-hand); font-size: 22px; line-height: 1.5; color: var(--ink); }
+.hand { font-family: var(--f-hand); font-size: 22px; line-height: 1.5; }
 .muted { color: var(--ink-soft); font-size: 14px; }
 img, video { max-width: 100%; display: block; }
+
+/* ---------- lock screen: the first tap unlocks sound on iPhone ---------- */
+#lock {
+  position: fixed; inset: 0; z-index: 52; color: var(--night-fg); background: var(--night);
+  display: flex; flex-direction: column; align-items: center; cursor: pointer; text-align: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 64px) 20px calc(env(safe-area-inset-bottom, 0px) + 40px);
+  transition: opacity .5s ease;
+}
+#lock::before {
+  content: ""; position: absolute; inset: -40px; z-index: -1;
+  background: url(lean3.jpg) center/cover; filter: blur(24px) brightness(.5);
+}
+#lock.gone { opacity: 0; pointer-events: none; }
+.lk-date { font-size: 17px; opacity: .85; }
+.lk-time { font-family: var(--f-body); font-weight: 600; font-size: 84px; line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.lk-note {
+  margin-top: 36px; width: 100%; max-width: 360px; text-align: left; border-radius: 20px; padding: 12px 14px;
+  background: rgba(255,255,255,.18); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  display: grid; grid-template-columns: 38px 1fr auto; gap: 2px 10px; align-items: center;
+  animation: drop .6s ease-out both .4s;
+}
+.lk-note .ic { grid-row: span 2; width: 38px; height: 38px; border-radius: 9px; background: var(--go); display: grid; place-items: center; }
+.lk-note .ic svg { width: 22px; height: 22px; fill: #fff; }
+.lk-note b { font-size: 15px; }
+.lk-note .when { font-size: 13px; opacity: .7; }
+.lk-note .msg { grid-column: 2 / -1; font-size: 15px; opacity: .92; }
+.lk-hint { margin-top: auto; font-size: 15px; opacity: .8; animation: breathe 2s ease-in-out infinite; }
+@keyframes drop { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+@keyframes breathe { 50% { opacity: .35; } }
 
 /* ---------- incoming call ---------- */
 #call {
@@ -65,7 +103,8 @@ img, video { max-width: 100%; display: block; }
   content: ""; position: absolute; inset: -40px; z-index: -1;
   background: url(selfie.jpg) center/cover; filter: blur(34px) brightness(.45) saturate(1.2);
 }
-#call.gone { opacity: 0; transform: scale(1.04); pointer-events: none; }
+#call.gone, #intro.gone { opacity: 0; pointer-events: none; }
+#call.gone { transform: scale(1.04); }
 .caller { text-align: center; }
 .avatar {
   width: 112px; height: 112px; border-radius: 50%; margin: 0 auto 18px;
@@ -77,7 +116,7 @@ img, video { max-width: 100%; display: block; }
 .call-btns { display: flex; gap: 88px; }
 .call-btns button {
   width: 74px; height: 74px; border-radius: 50%; border: 0; color: #fff; cursor: pointer;
-  font-size: 13px; display: grid; place-items: center; position: relative;
+  display: grid; place-items: center; position: relative;
 }
 .call-btns button span { position: absolute; top: 84px; white-space: nowrap; font-size: 14px; color: var(--night-fg); opacity: .85; }
 .call-btns svg { width: 30px; height: 30px; fill: #fff; }
@@ -88,8 +127,25 @@ img, video { max-width: 100%; display: block; }
 .shake { animation: shake .4s; }
 @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
+/* ---------- intro video after answering ---------- */
+#intro {
+  position: fixed; inset: 0; z-index: 49; background: #000;
+  transition: opacity .8s ease;
+}
+/* pinned to the screen box so the whole clip fits on any screen, phone or desktop */
+#intro video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; background: #000;
+}
+#skip {
+  position: absolute; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255,255,255,.16); color: #fff; border: 0; border-radius: 999px;
+  padding: 8px 16px; font-size: 14px; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+#skip:focus-visible, #accept:focus-visible, #decline:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+
 /* ---------- hero ---------- */
-.hero { padding-top: 64px; padding-bottom: 24px; text-align: left; }
+.hero { padding-top: 64px; padding-bottom: 24px; }
 .hero .who { font-family: var(--f-hand); font-size: 26px; color: var(--rose); }
 .big {
   font-family: var(--f-num); font-size: clamp(150px, 46vw, 230px); line-height: .82;
@@ -98,9 +154,7 @@ img, video { max-width: 100%; display: block; }
 }
 .big small { font-family: var(--f-hand); font-size: 44px; line-height: 1; margin-bottom: 18px; color: var(--rose); }
 .hero .lede { font-family: var(--f-head); font-size: 19px; line-height: 1.7; font-weight: 500; }
-.split {
-  display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin: 22px 0 8px; background: var(--thames-soft);
-}
+.split { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin: 22px 0 8px; background: var(--thames-soft); }
 .split i { display: block; height: 100%; }
 .split .a { background: var(--rose); }
 .split .b { background: var(--thames); }
@@ -108,20 +162,34 @@ img, video { max-width: 100%; display: block; }
 .split-key b { font-weight: 600; }
 .k-rose { color: var(--rose); } .k-thames { color: var(--thames); }
 
+/* ---------- table of contents ---------- */
+.toc { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 2px; }
+.toc a {
+  display: grid; grid-template-columns: 2.2em 1fr auto; align-items: baseline; gap: 8px;
+  padding: 10px 0; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--paper-2);
+}
+.toc .tn { font-family: var(--f-num); font-size: 24px; line-height: 1; }
+.toc .tt { font-family: var(--f-head); font-size: 16px; font-weight: 500; }
+.toc .tr { font-size: 12px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.toc .c-t .tn { color: var(--rose); }
+.toc .c-a .tn { color: var(--thames); }
+
 /* ---------- 277 dots ---------- */
-.grid {
-  display: grid; grid-template-columns: repeat(14, 1fr); gap: 5px; margin: 20px 0 14px;
-}
-.dot {
-  aspect-ratio: 1; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
-  background: var(--thames); transition: transform .15s;
-}
+.grid { display: grid; grid-template-columns: repeat(14, 1fr); gap: 5px; margin: 20px 0 14px; }
+.dot { aspect-ratio: 1; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: var(--thames); transition: transform .15s; }
 .dot.t { background: var(--rose); }
 .dot.f { background: transparent; box-shadow: inset 0 0 0 1.5px var(--thames-soft); }
 .dot.today { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
 .dot.goal { background: var(--rose); animation: beat 1.2s ease-in-out infinite; }
 .dot.mark { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--rose); }
 .dot.sel { transform: scale(1.5); }
+.dot.fly {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E");
+  background-size: 72%; background-position: center; background-repeat: no-repeat;
+}
+.dot.f.fly {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2346638c' d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E");
+}
 .dot:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 @keyframes beat { 0%,100% { transform: scale(1); } 30% { transform: scale(1.35); } 50% { transform: scale(1.05); } 70% { transform: scale(1.25); } }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-soft); }
@@ -129,18 +197,42 @@ img, video { max-width: 100%; display: block; }
 .legend .lt::before { background: var(--rose); }
 .legend .la::before { background: var(--thames); }
 .legend .lf::before { box-shadow: inset 0 0 0 1.5px var(--thames); }
-.daycard {
-  margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--paper-2);
-  display: flex; gap: 14px; align-items: baseline; min-height: 64px;
-}
+.daycard { margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--paper-2); display: flex; gap: 14px; align-items: baseline; min-height: 64px; }
 .daycard .n { font-family: var(--f-num); font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; min-width: 2.2em; }
 .daycard .d { font-size: 13px; color: var(--ink-soft); }
 .daycard .w { font-family: var(--f-hand); font-size: 22px; line-height: 1.35; }
 
-/* ---------- clocks ---------- */
+/* ---------- chapter covers ---------- */
+.chap { padding-top: 72px; padding-bottom: 8px; }
+.chap .num { font-family: var(--f-num); font-size: 110px; line-height: .8; color: var(--rose); letter-spacing: -.02em; }
+.chap .range { font-size: 13px; letter-spacing: .08em; color: var(--ink-soft); margin: 14px 0 4px; font-variant-numeric: tabular-nums; }
+.chap h2 { font-size: 30px; margin-bottom: 6px; }
+.chap .hand { color: var(--ink-soft); font-size: 20px; }
+
+/* ---------- photo layouts ---------- */
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; align-items: start; }
+.duo > :nth-child(2) { margin-top: 36px; }
+.duo.even .photo { aspect-ratio: 3/4; }
+.photo { border-radius: 4px; overflow: hidden; background: var(--paper-2); }
+.photo img, .photo video { width: 100%; height: 100%; object-fit: cover; }
+.wide { margin: 18px 0; border-radius: 4px; overflow: hidden; }
+.tilt { transform: rotate(-1.5deg); }
+.tilt-r { transform: rotate(1.8deg); }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 18px 0 34px; }
+.trio .photo { aspect-ratio: 3/4; }
+.trio .photo:nth-child(2) { transform: translateY(18px); }
+.film { margin: 18px auto; max-width: 300px; border-radius: 18px; overflow: hidden; background: var(--night); }
+.film video { width: 100%; }
+.film-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
+.film-pair .film { margin: 0; max-width: none; }
+
+/* ---------- apart chapter (blue band) ---------- */
+.apart { background: var(--thames); color: var(--night-fg); }
+.apart .chap .num { color: var(--rose-soft); }
+.apart .chap .range, .apart .chap .hand { color: var(--thames-soft); }
 .clocks { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0 18px; }
 .clock { padding: 16px; border-radius: 16px; }
-.clock.ldn { background: var(--thames); color: var(--night-fg); }
+.clock.ldn { background: var(--thames-deep); color: var(--night-fg); }
 .clock.sh { background: var(--rose-soft); color: var(--ink); }
 .clock .city { font-size: 13px; letter-spacing: .08em; opacity: .85; }
 .clock .time { font-family: var(--f-num); font-size: 46px; line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -150,29 +242,57 @@ img, video { max-width: 100%; display: block; }
   margin-right: calc(-1 * max(20px, env(safe-area-inset-right, 0px)));
 }
 .strip img { width: 42%; flex: none; border-radius: 14px; scroll-snap-align: start; }
+.apart-end { padding-bottom: 64px; }
 
-/* ---------- chapters ---------- */
-.chapter-title { display: flex; align-items: baseline; gap: 12px; }
-.chapter-title .no { font-family: var(--f-num); font-size: 44px; line-height: 1; color: var(--rose); }
-.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; align-items: start; }
-.duo > :nth-child(2) { margin-top: 36px; }
-.photo { border-radius: 4px; overflow: hidden; background: var(--paper-2); }
-.photo img, .photo video { width: 100%; height: 100%; object-fit: cover; }
-.wide { margin: 18px 0; border-radius: 4px; overflow: hidden; }
-.tilt { transform: rotate(-1.5deg); }
-.tilt-r { transform: rotate(1.8deg); }
-.note { margin-top: 6px; }
-.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 18px 0; }
-.trio .photo { aspect-ratio: 3/4; }
-.trio .photo:nth-child(2) { transform: translateY(18px); }
-.vids { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
-.vids .photo:first-child { grid-column: 1 / -1; }
+/* ---------- flights ---------- */
+.km { font-family: var(--f-num); font-size: clamp(68px, 21vw, 104px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin: 18px 0 10px; display: flex; align-items: baseline; gap: 8px; }
+.km small { font-family: var(--f-hand); font-size: 28px; color: var(--rose); }
+.earth { position: relative; height: 12px; border-radius: 6px; background: var(--thames-soft); margin: 40px 0 8px; }
+.earth i { position: absolute; top: 0; bottom: 0; display: block; }
+.earth .flown { left: 0; width: 81%; background: var(--thames); border-radius: 6px 0 0 6px; }
+.earth .next { left: 81%; width: 18%; background: repeating-linear-gradient(90deg, var(--rose) 0 6px, transparent 6px 10px); }
+.earth .lap { left: 66.8%; top: -7px; bottom: -7px; width: 2px; background: var(--ink); }
+.earth .lap span { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; color: var(--ink); }
+.earth-key { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.map { margin: 16px 0 10px; background: var(--card); border-radius: 16px; padding: 6px; }
+.map svg { width: 100%; height: auto; display: block; }
+.map text { font-family: var(--f-body); font-size: 11px; fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
+.map .grat { stroke: var(--thames-soft); stroke-width: .6; stroke-dasharray: 2 4; fill: none; }
+.map .route { fill: none; stroke-width: 1.6; stroke-linecap: round; }
+.map .solo { stroke: var(--thames); opacity: .75; }
+.map .with { stroke: var(--rose); stroke-width: 2.2; }
+.map .next { stroke: var(--rose); stroke-dasharray: 5 4; }
+.map .city { fill: var(--card); stroke: var(--ink); stroke-width: 1.2; }
+.map .home { fill: var(--rose); transform-box: fill-box; transform-origin: center; animation: beat 1.2s ease-in-out infinite; }
+.map.armed .route { transition: stroke-dashoffset 1.1s ease-in-out; }
+.legend .ln::before { background: repeating-linear-gradient(90deg, var(--rose) 0 3px, transparent 3px 5px); border-radius: 0; height: 3px; vertical-align: 3px; }
+.map-key { margin-bottom: 4px; }
 
-/* ---------- the visit ---------- */
-.visit { background: var(--thames); color: var(--night-fg); }
-.visit .eyebrow { color: var(--rose-soft); }
-.visit .hand { color: var(--night-fg); }
-.visit .muted { color: var(--thames-soft); }
+.pass { position: relative; background: var(--card); border-radius: 14px; margin: 16px 0; overflow: hidden; box-shadow: 0 1px 0 var(--paper-2), 0 6px 18px rgba(44,40,48,.06); }
+.pass header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 12px 16px; background: var(--thames); color: var(--night-fg); }
+.pass .pl { font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; opacity: .8; width: 100%; }
+.pass .pt { font-family: var(--f-head); font-weight: 700; font-size: 17px; flex: 1; min-width: 0; }
+.pass .pd { font-family: var(--f-mono); font-size: 13px; }
+.legs { list-style: none; margin: 0; padding: 4px 0; }
+.legs li { display: grid; grid-template-columns: 4.4em minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 9px 16px; }
+.legs li + li { border-top: 1px dashed var(--paper-2); }
+.legs .code { font-family: var(--f-mono); font-size: 12px; color: var(--ink-soft); }
+.legs .route { font-family: var(--f-head); font-weight: 500; font-size: 15px; }
+.legs .time { font-family: var(--f-mono); font-size: 12px; color: var(--ink-soft); text-align: right; white-space: nowrap; }
+.legs li.with .route { color: var(--rose); }
+.legs li.with .route::after { content: "一起"; margin-left: 6px; padding: 1px 6px; border-radius: 99px; background: var(--rose-soft); color: var(--rose); font-family: var(--f-body); font-size: 11px; vertical-align: 2px; }
+.pass .note { position: relative; margin: 0; padding: 12px 16px 14px; border-top: 2px dashed var(--paper-2); font-family: var(--f-hand); font-size: 19px; }
+.pass .note::before, .pass .note::after { content: ""; position: absolute; top: -9px; width: 16px; height: 16px; border-radius: 50%; background: var(--paper); }
+.pass .note::before { left: -8px; } .pass .note::after { right: -8px; }
+.pass.final header { background: var(--rose); }
+.pass.final .note { color: var(--rose); }
+.fields { margin: 0; padding: 8px 16px 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 10px; border-top: 1px dashed var(--paper-2); }
+.fields dt { font-size: 11px; letter-spacing: .1em; color: var(--ink-soft); }
+.fields dd { margin: 0; font-family: var(--f-head); font-weight: 700; font-size: 17px; line-height: 1.4; }
+.cities { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+.cities div { background: var(--rose-soft); border-radius: 12px; padding: 12px; display: grid; }
+.cities b { font-family: var(--f-head); font-size: 20px; }
+.cities span { font-family: var(--f-mono); font-size: 11px; color: var(--ink-soft); }
 
 /* ---------- days matter ---------- */
 .wood {
@@ -182,10 +302,7 @@ img, video { max-width: 100%; display: block; }
   padding-block: 56px;
 }
 .dm-title { font-family: var(--f-head); font-weight: 700; color: #8a5a1c; text-align: center; font-size: 22px; margin-bottom: 18px; }
-.dm-card {
-  position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 4/3; max-width: 100%;
-  box-shadow: 0 10px 30px rgba(90,55,10,.3); color: #fff; text-align: center;
-}
+.dm-card { position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 4/3; max-width: 100%; box-shadow: 0 10px 30px rgba(90,55,10,.3); color: #fff; text-align: center; }
 .dm-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; filter: brightness(.8); }
 .dm-card .in { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 18px; }
 .dm-card .t { font-family: var(--f-head); font-size: 18px; font-weight: 700; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
@@ -196,15 +313,9 @@ img, video { max-width: 100%; display: block; }
 
 /* ---------- wishlist ---------- */
 .wish { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 10px; }
-.wish label {
-  display: flex; gap: 14px; align-items: center; padding: 16px; border-radius: 14px;
-  background: var(--paper-2); cursor: pointer; transition: background .2s;
-}
+.wish label { display: flex; gap: 14px; align-items: center; padding: 16px; border-radius: 14px; background: var(--paper-2); cursor: pointer; }
 .wish input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.wish .box {
-  flex: none; width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--rose);
-  display: grid; place-items: center; transition: background .2s;
-}
+.wish .box { flex: none; width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--rose); display: grid; place-items: center; transition: background .2s; }
 .wish .box svg { width: 15px; height: 15px; fill: none; stroke: #fff; stroke-width: 3; opacity: 0; }
 .wish input:checked + .box { background: var(--rose); }
 .wish input:checked + .box svg { opacity: 1; }
@@ -223,6 +334,18 @@ footer .hand { font-size: 26px; }
 </head>
 <body>
 
+<!-- lock screen with a FaceTime notification; tapping it starts the ringtone -->
+<div id="lock" role="button" tabindex="0" aria-label="轻点屏幕接听来电">
+  <div class="lk-date" id="lkDate">11月3日 星期二</div>
+  <div class="lk-time" id="lkTime">07:00</div>
+  <div class="lk-note">
+    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></span>
+    <b>FaceTime</b><span class="when">现在</span>
+    <span class="msg">小鸡毛 邀请你进行视频通话</span>
+  </div>
+  <div class="lk-hint">轻点屏幕接听来电</div>
+</div>
+<audio id="ring" src="ringtone.mp3" loop preload="auto"></audio>
 
 <!-- incoming FaceTime -->
 <div id="call" role="dialog" aria-label="来电">
@@ -236,7 +359,7 @@ footer .hand { font-size: 26px; }
     <div id="nope" aria-live="polite"></div>
     <div class="call-btns">
       <button id="decline" aria-label="拒绝">
-        <svg viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.850-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.780 7.460 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
         <span>拒绝</span>
       </button>
       <button id="accept" aria-label="接听">
@@ -247,6 +370,12 @@ footer .hand { font-size: 26px; }
   </div>
 </div>
 
+<!-- plays after answering, then fades into the page -->
+<div id="intro" hidden>
+  <video id="introVideo" src="clip5.mp4" playsinline preload="auto"></video>
+  <button id="skip">跳过</button>
+</div>
+
 <main>
   <header class="wrap hero">
     <div class="who">给小白 · 来自小鸡毛</div>
@@ -254,138 +383,258 @@ footer .hand { font-size: 26px; }
     <p class="lede">从 2026 年 2 月 26 日到 11 月 2 日，我们在一起 250 天了。</p>
     <div class="split" aria-hidden="true"><i class="a" id="splitA"></i><i class="b" id="splitB"></i></div>
     <div class="split-key">
-      <span><b class="k-rose" id="kTogether">183</b> 天在同一座城市</span>
-      <span><b class="k-thames" id="kApart">67</b> 天隔着 9,200 公里</span>
+      <span><b class="k-rose" id="kTogether">190</b> 天在一起</span>
+      <span><b class="k-thames" id="kApart">60</b> 天隔着 9,000 公里</span>
     </div>
   </header>
 
   <section class="wrap" aria-labelledby="h-dots">
     <div class="eyebrow">every single day</div>
     <h2 id="h-dots">一颗点，就是一天</h2>
-    <p>粉色是我们在一起的日子，蓝色是我在伦敦想你的日子。最后那颗在跳的，是我回来的那天。点任意一颗看看。</p>
-    <div class="grid" id="grid" aria-label="277 天的日历"></div>
+    <p>粉色是我们在一起的日子，蓝色是我在伦敦想你的日子。带小飞机的是我在天上的日子，最后那颗在跳的，是我落地常州的那天。点任意一颗看看。</p>
+    <div class="grid" id="grid" aria-label="278 天的日历"></div>
     <div class="legend"><span class="lt">在一起</span><span class="la">伦敦 · 想你</span><span class="lf">还在数</span></div>
     <div class="daycard" aria-live="polite">
       <div class="n" id="dcN">250</div>
       <div><div class="d" id="dcD">11月2日</div><div class="w" id="dcW">今天，给你做了这个网页</div></div>
     </div>
+
+    <ol class="toc" aria-label="目录">
+      <li class="c-t"><a href="#ch1"><span class="tn">1</span><span class="tt">我们</span><span class="tr">第 1–175 天</span></a></li>
+      <li class="c-t"><a href="#ch2"><span class="tn">2</span><span class="tt">小白</span><span class="tr">我最喜欢的样子</span></a></li>
+      <li class="c-t"><a href="#ch3"><span class="tn">3</span><span class="tt">花和小东西</span><span class="tr">留下来的</span></a></li>
+      <li class="c-a"><a href="#ch4"><span class="tn">4</span><span class="tt">隔着 8 个小时</span><span class="tr">第 176 天起</span></a></li>
+      <li class="c-t"><a href="#ch5"><span class="tn">5</span><span class="tt">飞向你</span><span class="tr">48,593 公里</span></a></li>
+      <li class="c-t"><a href="#ch6"><span class="tn">6</span><span class="tt">第 278 天</span><span class="tr">11 月 30 日 · 常州</span></a></li>
+    </ol>
   </section>
 
-  <section class="wrap" aria-labelledby="h-clock">
-    <div class="eyebrow">London · Shanghai</div>
-    <h2 id="h-clock">我们之间差 8 个小时</h2>
-    <div class="clocks">
-      <div class="clock ldn"><div class="city">LONDON</div><div class="time" id="tL">--:--</div><div class="who2">小鸡毛这边</div></div>
-      <div class="clock sh"><div class="city">上海</div><div class="time" id="tS">--:--</div><div class="who2">小白那边</div></div>
+  <!-- 1 · 我们 -->
+  <section id="ch1" class="wrap" aria-labelledby="h-c1">
+    <div class="chap">
+      <div class="num">1</div>
+      <div class="range">第 1–175 天 · 2 月 26 日 – 8 月 19 日</div>
+      <h2 id="h-c1">我们</h2>
+      <p class="hand">我还没去伦敦的那 175 天。</p>
     </div>
-    <div class="strip" tabindex="0" aria-label="FaceTime 截图">
-      <img src="ft1.jpg" alt="视频通话截图，小鸡毛抱着小狗玩偶" loading="lazy">
-      <img src="ft-cat.jpg" alt="视频通话截图，小白和猫" loading="lazy">
-      <img src="ft2.jpg" alt="视频通话截图" loading="lazy">
-      <img src="ft4.jpg" alt="视频通话截图，小白" loading="lazy">
-      <img src="ft3.jpg" alt="视频通话截图" loading="lazy">
-    </div>
-    <p class="hand note">那只戴蓝帽子的小狗，每次都陪我等你接电话。</p>
-  </section>
 
-  <section class="wrap" aria-labelledby="h-c1">
-    <div class="chapter-title"><span class="no">i.</span><h2 id="h-c1">贴贴</h2></div>
+    <h3>贴贴</h3>
     <div class="wide tilt photo"><img src="selfie.jpg" alt="两个人的自拍" loading="lazy"></div>
     <div class="duo">
       <div class="photo"><img src="lean2.jpg" alt="小白靠在小鸡毛身上" loading="lazy"></div>
       <div class="photo"><img src="lean1.jpg" alt="小白嘟嘴" loading="lazy"></div>
     </div>
-    <div class="wide tilt-r photo"><img src="dinner.jpg" alt="一起吃饭" loading="lazy"></div>
+    <div class="duo even">
+      <div class="photo"><img src="mirror.jpg" alt="一起照镜子自拍" loading="lazy"></div>
+      <div class="photo"><img src="lying.jpg" alt="躺在一起" loading="lazy"></div>
+    </div>
     <p class="hand">歪着头拍的每一张，我都存了好几遍。</p>
-  </section>
 
-  <section class="wrap" aria-labelledby="h-c2">
-    <div class="chapter-title"><span class="no">ii.</span><h2 id="h-c2">生日那晚</h2></div>
+    <h3>一起去过的地方</h3>
+    <div class="wide tilt-r photo"><img src="mountain.jpg" alt="在山上的合照" loading="lazy"></div>
+    <div class="wide photo"><img src="dinner.jpg" alt="一起吃饭" loading="lazy"></div>
+    <div class="film"><video src="clip3.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+
+    <h3>生日那晚</h3>
     <div class="duo">
       <div class="photo"><img src="cake.jpg" alt="黄色裙子造型的生日蛋糕" loading="lazy"></div>
       <div class="photo"><img src="wish.jpg" alt="小鸡毛对着蛋糕许愿" loading="lazy"></div>
     </div>
     <p class="hand">闭着眼睛许愿的时候，愿望里全是你。</p>
+
+    <h3>日常</h3>
+    <div class="film"><video src="clip1.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
   </section>
 
-  <section class="wrap" aria-labelledby="h-c3">
-    <div class="chapter-title"><span class="no">iii.</span><h2 id="h-c3">你和猫猫</h2></div>
+  <!-- 2 · 小白 -->
+  <section id="ch2" class="wrap" aria-labelledby="h-c2">
+    <div class="chap">
+      <div class="num">2</div>
+      <div class="range">我最喜欢的样子</div>
+      <h2 id="h-c2">小白</h2>
+    </div>
+
+    <h3>你和猫猫</h3>
     <div class="duo">
       <div class="photo"><img src="cat1.jpg" alt="小白抱着猫" loading="lazy"></div>
       <div class="photo"><img src="cat2.jpg" alt="猫看着镜头" loading="lazy"></div>
     </div>
     <p class="hand">它可以天天被你抱着，我有一点点羡慕。</p>
-  </section>
 
-  <section class="wrap" aria-labelledby="h-c4">
-    <div class="chapter-title"><span class="no">iv.</span><h2 id="h-c4">没睡醒的小白</h2></div>
+    <h3>没睡醒的小白</h3>
     <div class="trio">
       <div class="photo"><img src="sleepy1.jpg" alt="小白穿着睡衣" loading="lazy"></div>
       <div class="photo"><img src="sleepy3.jpg" alt="小白闭着眼睛" loading="lazy"></div>
       <div class="photo"><img src="sleepy2.jpg" alt="小白托着脸" loading="lazy"></div>
     </div>
-    <p class="hand" style="margin-top:28px">穿着小狗睡衣的你，是我最想每天早上都看到的样子。</p>
+    <div class="film"><video src="clip2.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+    <p class="hand">穿着小狗睡衣的你，是我最想每天早上都看到的样子。</p>
   </section>
 
-  <section class="wrap" aria-labelledby="h-c5">
-    <div class="chapter-title"><span class="no">v.</span><h2 id="h-c5">会动的你</h2></div>
-    <div class="vids">
-      <div class="photo"><video src="clip3.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
-      <div class="photo"><video src="clip1.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
-      <div class="photo"><video src="clip2.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+  <!-- 3 · 花和小东西 -->
+  <section id="ch3" class="wrap" aria-labelledby="h-c3">
+    <div class="chap">
+      <div class="num">3</div>
+      <div class="range">留下来的</div>
+      <h2 id="h-c3">花和小东西</h2>
     </div>
-  </section>
-
-  <section class="visit" aria-labelledby="h-visit">
-    <div class="wrap">
-      <div class="eyebrow">day 227 – 234</div>
-      <h2 id="h-visit">10 月 10 日，我回来了</h2>
-      <div class="duo">
-        <div class="photo"><img src="iphone.jpg" alt="机场里的 iPhone 18 Pro 包装盒" loading="lazy"></div>
-        <div class="photo"><img src="airport.jpg" alt="机场走廊" loading="lazy"></div>
-      </div>
-      <p>10 月 17 日，又走了一遍这条走廊。每次都是往离开你的方向走。</p>
-      <p class="hand">下一次，我是往你那边走。</p>
-    </div>
-  </section>
-
-  <section class="wrap" aria-labelledby="h-flowers">
+    <div class="wide tilt-r photo"><img src="bouquet.jpg" alt="小白抱着一束花" loading="lazy"></div>
     <div class="duo">
       <div class="photo"><img src="rose1.jpg" alt="粉色玫瑰" loading="lazy"></div>
       <div class="photo"><img src="rose2.jpg" alt="粉玫瑰和小雏菊" loading="lazy"></div>
     </div>
-    <h2 id="h-flowers">250 天，一天都没有少爱你</h2>
-    <p>每个月飞回去一次，单程十几个小时。有人觉得很累，我觉得路上每一分钟都在离你更近。</p>
+    <div class="film"><video src="clip4.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+    <p class="hand">花会谢，但我会一直送。</p>
   </section>
 
-  <section class="wood" aria-labelledby="h-dm">
-    <div class="wrap">
-      <div class="dm-title" id="h-dm">Days Matter</div>
-      <div class="dm-card">
-        <img src="lean3.jpg" alt="" loading="lazy">
-        <div class="in">
-          <div class="t">离见到小白老婆还有</div>
-          <div class="num" id="dmNum">27</div>
-          <div class="g" id="dmGoal">目标日: 2026-11-29 Sunday</div>
-        </div>
+  <!-- 4 · 隔着 8 个小时 -->
+  <section id="ch4" class="apart" aria-labelledby="h-c4">
+    <div class="wrap apart-end">
+      <div class="chap">
+        <div class="num">4</div>
+        <div class="range">第 176 天起 · 8 月 20 日，我去了伦敦</div>
+        <h2 id="h-c4">隔着 8 个小时</h2>
       </div>
-      <div class="dm-tick" id="dmTick">&nbsp;</div>
-      <p class="dm-note">这是我手机里的倒计时，我每天都会打开看一次。到那一天，是我们在一起的第 277 天。</p>
+      <div class="clocks">
+        <div class="clock ldn"><div class="city">LONDON</div><div class="time" id="tL">--:--</div><div class="who2">小鸡毛这边</div></div>
+        <div class="clock sh"><div class="city">上海</div><div class="time" id="tS">--:--</div><div class="who2">小白那边</div></div>
+      </div>
+      <div class="strip" tabindex="0" aria-label="FaceTime 截图">
+        <img src="ft1.jpg" alt="视频通话截图，小鸡毛抱着小狗玩偶" loading="lazy">
+        <img src="ft-cat.jpg" alt="视频通话截图，小白和猫" loading="lazy">
+        <img src="ft2.jpg" alt="视频通话截图" loading="lazy">
+        <img src="ft4.jpg" alt="视频通话截图，小白" loading="lazy">
+        <img src="ft3.jpg" alt="视频通话截图" loading="lazy">
+        <img src="ft5.jpg" alt="视频通话截图，两个人都躺着" loading="lazy">
+      </div>
+      <p class="hand">那只戴蓝帽子的小狗，每次都陪我等你接电话。</p>
     </div>
   </section>
 
-  <section class="wrap" aria-labelledby="h-wish">
-    <div class="eyebrow">after day 277</div>
-    <h2 id="h-wish">见面以后，我们要一起做的事</h2>
-    <p>做完一件，就来这里勾掉一件。</p>
-    <ul class="wish">
-      <li><label for="w1"><input type="checkbox" id="w1"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">一起过圣诞节<small>今年的 12 月 25 日，不隔着屏幕</small></span></label></li>
-      <li><label for="w2"><input type="checkbox" id="w2"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛接小白下班<small>你一出门，就能看到我</small></span></label></li>
-      <li><label for="w3"><input type="checkbox" id="w3"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛给小白做可乐鸡翅<small>一整盘都是你的</small></span></label></li>
-      <li><label for="w4"><input type="checkbox" id="w4"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛送小白上班<small>早上八点，这次不是视频</small></span></label></li>
-    </ul>
-    <div class="hand" id="wishDone" aria-live="polite"></div>
+  <!-- 5 · 飞向你 -->
+  <section id="ch5" class="wrap" aria-labelledby="h-c5">
+    <div class="chap">
+      <div class="num">5</div>
+      <div class="range">8 月 20 日至今 · 11 段航班</div>
+      <h2 id="h-c5">飞向你</h2>
+      <p class="hand">说好每个月都回来，一个月都没有落下。</p>
+    </div>
+
+    <div class="km" id="km" aria-label="48,593 公里"><span id="kmNum">48,593</span><small>公里</small></div>
+    <p>8 月 20 日以后我飞过的路，已经比绕地球一圈（40,075 公里）还长了 8,518 公里。等我落地常州，会是 59,375 公里，差不多绕地球一圈半。</p>
+    <div class="earth" aria-hidden="true">
+      <i class="flown"></i><i class="next"></i><i class="lap"><span>地球一圈</span></i>
+    </div>
+    <div class="earth-key"><span>0</span><span>现在 48,593</span><span>落地常州 59,375</span></div>
+
+    <h3>航线</h3>
+    <div class="map">
+      <svg id="routeMap" viewBox="0 0 360 300" role="img" aria-label="航线示意图：伦敦、北京、延吉、厦门、上海、深圳、常州"></svg>
+    </div>
+    <div class="legend map-key"><span class="la">我一个人飞</span><span class="lt">和你一起飞</span><span class="ln">下一程</span></div>
+    <p class="muted">示意图，中国部分放大了画。</p>
+
+    <h3>登机牌</h3>
+    <article class="pass">
+      <header><span class="pl">BOARDING PASS</span><span class="pt">出发 · 去伦敦上学</span><span class="pd">8.20</span></header>
+      <ol class="legs">
+        <li><span class="code">CZ5010</span><span class="route">香港 → 北京大兴</span><span class="time">8.20 08:30</span></li>
+        <li><span class="code">CZ673</span><span class="route">北京大兴 → 伦敦</span><span class="time">8.20 14:15</span></li>
+      </ol>
+      <p class="note">从这一天起，日历变成了蓝色。</p>
+    </article>
+    <article class="pass">
+      <header><span class="pl">BOARDING PASS</span><span class="pt">第一次回来 · 延吉</span><span class="pd">9.23 – 9.30</span></header>
+      <ol class="legs">
+        <li><span class="code">CA852</span><span class="route">伦敦 → 北京</span><span class="time">9.23 12:35</span></li>
+        <li class="with"><span class="code">CA1615</span><span class="route">北京 → 延吉</span><span class="time">9.24 19:15</span></li>
+        <li class="with"><span class="code">CA1614</span><span class="route">延吉 → 北京</span><span class="time">9.30 09:30</span></li>
+        <li><span class="code">CA631</span><span class="route">北京 → 伦敦</span><span class="time">9.30 14:00</span></li>
+      </ol>
+      <p class="note">在伦敦等了 35 天，回来陪你 7 天。</p>
+    </article>
+    <article class="pass">
+      <header><span class="pl">BOARDING PASS</span><span class="pt">第二次回来 · 厦门 · 上海</span><span class="pd">10.17 – 10.26</span></header>
+      <ol class="legs">
+        <li><span class="code">CA938</span><span class="route">伦敦 → 北京</span><span class="time">10.17 20:25</span></li>
+        <li class="with"><span class="code">CA1815</span><span class="route">北京 → 厦门</span><span class="time">10.18 16:30</span></li>
+        <li class="with"><span class="code">SC2167</span><span class="route">厦门 → 上海</span><span class="time">10.22 08:10</span></li>
+        <li class="with"><span class="code">MU5153</span><span class="route">上海 → 北京</span><span class="time">10.25 09:30</span></li>
+        <li><span class="code">CA851</span><span class="route">北京 → 伦敦</span><span class="time">10.26 03:10</span></li>
+      </ol>
+      <p class="note">这次只等了 17 天，陪你 8 天。</p>
+    </article>
+
+    <h3>一起去过的城市</h3>
+    <div class="cities">
+      <div><b>延吉</b><span>9.24 – 9.30</span></div>
+      <div><b>厦门</b><span>10.18 – 10.22</span></div>
+      <div><b>上海</b><span>10.22 – 10.25</span></div>
+    </div>
+    <p>我们一起飞了 5 段，5,858 公里。这是我最喜欢的那几段航线。</p>
+
+    <div class="wide photo"><img src="airport.jpg" alt="机场走廊" loading="lazy"></div>
+    <p>每次走过机场的这条走廊，都是往离开你的方向走。</p>
+    <p class="hand">下一次，我是往你那边走。</p>
   </section>
+
+  <!-- 6 · 第 277 天 -->
+  <div id="ch6">
+    <section class="wrap" aria-labelledby="h-c6" style="padding-bottom:24px">
+      <div class="chap">
+        <div class="num">6</div>
+        <div class="range">11 月 30 日 · 星期一 · 常州</div>
+        <h2 id="h-c6">第 278 天</h2>
+        <p class="hand">又等了 35 天。这一次，终点是你。</p>
+      </div>
+
+      <article class="pass final">
+        <header><span class="pl">BOARDING PASS</span><span class="pt">第三次回来 · 常州</span><span class="pd">11.29 – 11.30</span></header>
+        <ol class="legs">
+          <li><span class="code">ZH888</span><span class="route">伦敦 → 深圳</span><span class="time">11.29 21:10</span></li>
+          <li><span class="code">ZH8927</span><span class="route">深圳 → 常州</span><span class="time">11.30 19:40</span></li>
+        </ol>
+        <dl class="fields">
+          <div><dt>乘客</dt><dd>小鸡毛</dd></div>
+          <div><dt>目的地</dt><dd>小白</dd></div>
+          <div><dt>落地</dt><dd>11.30 21:55</dd></div>
+          <div><dt>座位</dt><dd>你旁边</dd></div>
+          <div><dt>全程</dt><dd>16 小时 45 分</dd></div>
+          <div><dt>距离</dt><dd>10,782 公里</dd></div>
+        </dl>
+        <p class="note">这是我最想登上的一班飞机。</p>
+      </article>
+    </section>
+
+    <section class="wood" aria-label="倒计时">
+      <div class="wrap">
+        <div class="dm-title">Days Matter</div>
+        <div class="dm-card">
+          <img src="lean3.jpg" alt="" loading="lazy">
+          <div class="in">
+            <div class="t">离见到小白老婆还有</div>
+            <div class="num" id="dmNum">27</div>
+            <div class="g">目标日: 2026-11-30 Monday · 21:55 常州</div>
+          </div>
+        </div>
+        <div class="dm-tick" id="dmTick">&nbsp;</div>
+        <p class="dm-note">我手机里的倒计时数到 29 号起飞，这里数到我落地常州的那一刻。那一天，是我们在一起的第 278 天。</p>
+      </div>
+    </section>
+
+    <section class="wrap" aria-labelledby="h-wish">
+      <div class="eyebrow">after day 278</div>
+      <h2 id="h-wish">见面以后，我们要一起做的事</h2>
+      <p>做完一件，就来这里勾掉一件。</p>
+      <ul class="wish">
+        <li><label for="w1"><input type="checkbox" id="w1"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">一起过圣诞节<small>今年的 12 月 25 日，不隔着屏幕</small></span></label></li>
+        <li><label for="w2"><input type="checkbox" id="w2"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛接小白下班<small>你一出门，就能看到我</small></span></label></li>
+        <li><label for="w3"><input type="checkbox" id="w3"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛给小白做可乐鸡翅<small>一整盘都是你的</small></span></label></li>
+        <li><label for="w4"><input type="checkbox" id="w4"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span class="txt">小鸡毛送小白上班<small>早上八点，这次不是视频</small></span></label></li>
+      </ul>
+      <div class="hand" id="wishDone" aria-live="polite"></div>
+    </section>
+  </div>
 
   <footer class="wrap">
     <p class="hand">我爱你，小白。<br>第 250 天，写于伦敦。</p>
@@ -398,19 +647,27 @@ footer .hand { font-size: 26px; }
   var DAY = 864e5;
   var START = Date.UTC(2026, 1, 26);      // day 1
   var LEAVE = 176;                        // Aug 20: flew to London
-  var VISIT = [227, 234];                 // Oct 10 – Oct 17
-  var GOAL = 277;                         // Nov 29: next time
+  var VISITS = [[211, 217], [235, 242]];  // Sep 24 – Sep 30 (延吉), Oct 18 – Oct 25 (厦门 · 上海)
+  var GOAL = 278;                         // Nov 30: land in 常州
   var HERO = 250;
   var notes = {
     1: "第一天。从这里开始数",
     100: "第 100 天",
     175: "去伦敦前的最后一天",
-    176: "我飞去伦敦了",
-    227: "回来见你",
-    234: "又一次在机场说再见",
+    176: "CZ673 北京大兴 → 伦敦，去上学了",
+    210: "CA852 从伦敦起飞，回来见你",
+    211: "清早落地北京，晚上和你一起飞延吉",
+    217: "一起从延吉飞回北京，下午我又飞走了",
+    234: "CA938 从伦敦起飞，又回来了",
+    235: "落地北京，下午和你一起飞厦门",
+    239: "和你一起从厦门飞上海",
+    242: "和你一起从虹桥飞北京",
+    243: "凌晨 03:10，CA851 飞回伦敦",
     250: "今天，给你做了这个网页",
-    277: "见面"
+    277: "ZH888 21:10 从伦敦起飞",
+    278: "21:55 落地常州 · 见面"
   };
+  var FLY = { 176: 1, 210: 1, 211: 1, 217: 1, 234: 1, 235: 1, 239: 1, 242: 1, 243: 1, 277: 1, 278: 1 };
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function shanghaiToday() {
@@ -419,7 +676,11 @@ footer .hand { font-size: 26px; }
     return Date.UTC(p[0], p[1] - 1, p[2]);
   }
   function dayNo(utc) { return Math.round((utc - START) / DAY) + 1; }
-  function together(n) { return n < LEAVE || (n >= VISIT[0] && n <= VISIT[1]); }
+  function together(n) {
+    if (n < LEAVE) return true;
+    for (var v = 0; v < VISITS.length; v++) if (n >= VISITS[v][0] && n <= VISITS[v][1]) return true;
+    return false;
+  }
   function label(n) {
     var d = new Date(START + (n - 1) * DAY);
     return (d.getUTCMonth() + 1) + "月" + d.getUTCDate() + "日";
@@ -457,13 +718,14 @@ footer .hand { font-size: 26px; }
     else if (n > today) b.classList.add("f");
     else if (together(n)) b.classList.add("t");
     if (n === today && n !== GOAL) b.classList.add("today");
-    else if (notes[n] && n !== GOAL) b.classList.add("mark");
+    else if (notes[n] && n !== GOAL && !FLY[n]) b.classList.add("mark");
+    if (FLY[n]) b.classList.add("fly");
     b.setAttribute("aria-label", "第 " + n + " 天，" + label(n));
     (function (n, b) { b.addEventListener("click", function () { show(n, b); }); })(n, b);
     grid.appendChild(b);
   }
-  var startDot = grid.children[Math.min(Math.max(today, 1), GOAL) - 1];
-  show(Math.min(Math.max(today, 1), GOAL), startDot);
+  var startDay = Math.min(Math.max(today, 1), GOAL);
+  show(startDay, grid.children[startDay - 1]);
 
   // clocks
   function hm(tz) {
@@ -477,19 +739,19 @@ footer .hand { font-size: 26px; }
   tickClocks(); setInterval(tickClocks, 10000);
 
   // Days Matter countdown
-  var GOAL_UTC = Date.UTC(2026, 10, 29);
-  var GOAL_MOMENT = Date.UTC(2026, 10, 28, 16, 0, 0); // Nov 29 00:00 in Shanghai
+  var GOAL_UTC = Date.UTC(2026, 10, 30);
+  var GOAL_MOMENT = Date.UTC(2026, 10, 30, 13, 55, 0); // Nov 30 21:55 in 常州, ZH8927 lands
   function tickDM() {
     var left = Math.round((GOAL_UTC - shanghaiToday()) / DAY);
     var num = document.getElementById("dmNum"), tick = document.getElementById("dmTick");
-    if (left > 0) {
+    var ms = GOAL_MOMENT - Date.now();
+    if (left >= 0 && ms > 0) {
       num.textContent = left;
-      var ms = GOAL_MOMENT - Date.now();
       var h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4), s = Math.floor(ms % 6e4 / 1e3);
-      tick.textContent = "也就是 " + h + " 小时 " + String(m).padStart(2, "0") + " 分 " + String(s).padStart(2, "0") + " 秒";
+      tick.textContent = (left === 0 ? "就是今天。离落地还有 " : "离落地常州还有 ") + h + " 小时 " + String(m).padStart(2, "0") + " 分 " + String(s).padStart(2, "0") + " 秒";
     } else if (left === 0) {
       num.textContent = "0";
-      tick.textContent = "就是今天。我到啦。";
+      tick.textContent = "落地了。我到啦。";
     } else {
       num.textContent = "0";
       tick.textContent = "已经见到啦。下一次倒计时，我们一起数。";
@@ -497,19 +759,62 @@ footer .hand { font-size: 26px; }
   }
   tickDM(); setInterval(tickDM, 1000);
 
-  // incoming call
+  // incoming call -> intro video -> page
   var call = document.getElementById("call"), nope = document.getElementById("nope");
+  var intro = document.getElementById("intro"), introVideo = document.getElementById("introVideo");
   var lines = ["不可以挂断哦", "小鸡毛等了好久", "真的要挂吗", "接一下嘛"], li = 0;
   document.getElementById("decline").addEventListener("click", function () {
     nope.textContent = lines[li++ % lines.length];
     nope.classList.remove("shake"); void nope.offsetWidth; nope.classList.add("shake");
   });
-  document.getElementById("accept").addEventListener("click", function () {
-    call.classList.add("gone");
-    setTimeout(function () { call.hidden = true; }, 750);
+
+  var entered = false;
+  function enterPage() {
+    if (entered) return;
+    entered = true;
+    introVideo.pause();
+    intro.classList.add("gone");
+    setTimeout(function () { intro.hidden = true; }, 850);
     window.scrollTo(0, 0);
     countUp();
+  }
+  // lock screen: shows Shanghai time; the tap is what lets the ringtone play with sound
+  var lock = document.getElementById("lock"), ring = document.getElementById("ring");
+  function tickLock() {
+    var now = new Date();
+    document.getElementById("lkTime").textContent = hm("Asia/Shanghai");
+    document.getElementById("lkDate").textContent =
+      new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", month: "long", day: "numeric", weekday: "long" }).format(now);
+  }
+  tickLock(); var lockTimer = setInterval(tickLock, 10000);
+  function unlock() {
+    if (lock.classList.contains("gone")) return;
+    var p = ring.play();
+    if (p && p.catch) p.catch(function () {});
+    lock.classList.add("gone");
+    clearInterval(lockTimer);
+    setTimeout(function () { lock.hidden = true; }, 550);
+  }
+  lock.addEventListener("click", unlock);
+  lock.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); unlock(); } });
+
+  document.getElementById("accept").addEventListener("click", function () {
+    ring.pause(); ring.currentTime = 0;
+    intro.hidden = false;
+    // play inside the tap so the sound is allowed; fall back to muted, then skip
+    var p = introVideo.play();
+    if (p && p.catch) p.catch(function () {
+      introVideo.muted = true;
+      var q = introVideo.play();
+      if (q && q.catch) q.catch(enterPage);
+    });
+    call.classList.add("gone");
+    setTimeout(function () { call.hidden = true; }, 750);
   });
+  introVideo.addEventListener("ended", enterPage);
+  introVideo.addEventListener("error", enterPage);
+  document.getElementById("skip").addEventListener("click", enterPage);
+
   function countUp() {
     var el = document.getElementById("bigNum");
     if (reduce) { el.textContent = HERO; return; }
@@ -525,15 +830,107 @@ footer .hand { font-size: 26px; }
     requestAnimationFrame(step);
   }
 
-  // videos play when on screen
+  // route map: London on the left, China drawn enlarged on the right (schematic)
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var P = {
+    LHR: [30, 128, "伦敦", 0, 18, "middle"],
+    BJ:  [216, 69, "北京", -8, -6, "end"],
+    YNJ: [331, 38, "延吉", 0, 18, "middle"],
+    XMN: [230, 245, "厦门", 9, 4, "start"],
+    SH:  [262, 170, "上海", 9, 4, "start"],
+    HKG: [198, 280, "香港", 9, 6, "start"],
+    SZX: [184, 262, "深圳", -9, 2, "end"],
+    CZX: [243, 158, "常州", -9, -4, "end"]
+  };
+  // [from, to, kind, control point or bend]; long London legs get explicit control points so they stack
+  var LEGS = [
+    ["HKG", "BJ", "solo", 22],
+    ["BJ", "LHR", "solo", [123, -60]],
+    ["LHR", "BJ", "solo", [123, -35]],
+    ["BJ", "YNJ", "with", -16],
+    ["YNJ", "BJ", "with", -16],
+    ["BJ", "LHR", "solo", [123, -10]],
+    ["LHR", "BJ", "solo", [123, 15]],
+    ["BJ", "XMN", "with", 26],
+    ["XMN", "SH", "with", 14],
+    ["SH", "BJ", "with", 18],
+    ["BJ", "LHR", "solo", [123, 40]],
+    ["LHR", "SZX", "next", [95, 330]],
+    ["SZX", "CZX", "next", -26]
+  ];
+  function el(name, attrs, parent) {
+    var e = document.createElementNS(SVGNS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    parent.appendChild(e);
+    return e;
+  }
+  var svg = document.getElementById("routeMap"), mapBox = svg.parentNode;
+  [60, 120, 180, 240].forEach(function (y) { el("line", { x1: 0, y1: y, x2: 360, y2: y, "class": "grat" }, svg); });
+  [90, 170, 250, 330].forEach(function (x) { el("line", { x1: x, y1: 0, x2: x, y2: 300, "class": "grat" }, svg); });
+  var paths = [];
+  LEGS.forEach(function (L) {
+    var a = P[L[0]], b = P[L[1]], c = L[3];
+    if (typeof c === "number") {
+      var dx = b[0] - a[0], dy = b[1] - a[1], len = Math.sqrt(dx * dx + dy * dy);
+      c = [(a[0] + b[0]) / 2 - dy / len * c, (a[1] + b[1]) / 2 + dx / len * c];
+    }
+    paths.push(el("path", { d: "M" + a[0] + " " + a[1] + " Q" + c[0] + " " + c[1] + " " + b[0] + " " + b[1], "class": "route " + L[2] }, svg));
+  });
+  Object.keys(P).forEach(function (k) {
+    var p = P[k];
+    if (k === "CZX") el("circle", { cx: p[0], cy: p[1], r: 6, "class": "home" }, svg);
+    else el("circle", { cx: p[0], cy: p[1], r: 3.2, "class": "city" }, svg);
+    var t = el("text", { x: p[0] + p[3], y: p[1] + p[4], "text-anchor": p[5] }, svg);
+    t.textContent = p[2];
+  });
+
+  // draw the routes one by one, and count up the kilometres, when they scroll into view
+  if ("IntersectionObserver" in window && !reduce) {
+    paths.forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      p.dataset.len = len;
+    });
+    mapBox.classList.add("armed");
+    var mapIO = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      mapIO.disconnect();
+      paths.forEach(function (p, i) {
+        setTimeout(function () {
+          p.style.strokeDashoffset = 0;
+          if (p.classList.contains("next")) setTimeout(function () { p.style.strokeDasharray = ""; }, 1100);
+        }, i * 260);
+      });
+    }, { threshold: 0.4 });
+    mapIO.observe(mapBox);
+
+    var kmEl = document.getElementById("kmNum"), KM = 48593;
+    var kmIO = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      kmIO.disconnect();
+      var t0 = null;
+      function step(ts) {
+        if (t0 === null) t0 = ts;
+        var p = Math.min(1, (ts - t0) / 2200), e = 1 - Math.pow(1 - p, 3);
+        kmEl.textContent = Math.round(e * KM).toLocaleString("en-US");
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }, { threshold: 0.6 });
+    kmIO.observe(document.getElementById("km"));
+  }
+
+  // page videos play when on screen
   if ("IntersectionObserver" in window) {
     var io = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
+        if (!entered) return;
         if (e.isIntersecting) { var p = e.target.play(); if (p && p.catch) p.catch(function () {}); }
         else e.target.pause();
       });
     }, { threshold: 0.5 });
-    document.querySelectorAll("video").forEach(function (v) { io.observe(v); });
+    document.querySelectorAll("main video").forEach(function (v) { io.observe(v); });
   }
 
   // wishlist, remembered on her phone
@@ -556,6 +953,5 @@ footer .hand { font-size: 26px; }
   updateDone();
 })();
 </script>
-
 </body>
 </html>
