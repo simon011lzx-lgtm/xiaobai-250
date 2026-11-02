@@ -327,6 +327,33 @@ img, video { max-width: 100%; display: block; }
 footer { padding-block: 40px 72px; text-align: center; }
 footer .hand { font-size: 26px; }
 
+/* ---------- animations (only armed by script, so the page reads fine without them) ---------- */
+.rv { opacity: 0; translate: 0 28px; transition: opacity .9s ease, translate .9s cubic-bezier(.2,.7,.2,1), filter 1.3s ease; }
+.rv.photo { filter: blur(10px) saturate(.2) brightness(1.15); }
+.rv.in { opacity: 1; translate: 0 0; filter: none; }
+.grid .dot { transition: opacity .35s ease, scale .35s ease, transform .15s; }
+.grid.pre .dot { opacity: 0; scale: .2; }
+.split i { transition: width 2.6s cubic-bezier(.2,.7,.2,1); }
+.earth .flown, .earth .next { transform-origin: left center; transition: transform 1.6s cubic-bezier(.2,.7,.2,1); }
+.earth .next { transition-delay: 1.4s; }
+.earth .lap { transition: opacity .6s ease .9s; }
+.earth.pre .flown, .earth.pre .next { transform: scaleX(0); }
+.earth.pre .lap { opacity: 0; }
+.map .plane { fill: var(--ink); }
+.stamp {
+  position: absolute; right: 10px; bottom: 10px; width: 84px; height: 84px; border-radius: 50%;
+  border: 2.5px solid var(--rose); color: var(--rose); display: grid; place-content: center; text-align: center;
+  font-family: var(--f-mono); font-size: 11px; line-height: 1.35; letter-spacing: .08em; rotate: -14deg; opacity: .85;
+  box-shadow: inset 0 0 0 4px var(--card), inset 0 0 0 5.5px var(--rose); pointer-events: none;
+}
+.stamp b { font-family: var(--f-head); font-size: 20px; letter-spacing: 0; }
+.pass.final .note { padding-right: 100px; }
+.pass.final.rv .stamp { opacity: 0; scale: 2.4; }
+.pass.final.rv.in .stamp { animation: stamp .45s cubic-bezier(.3,1.6,.5,1) .8s both; }
+@keyframes stamp { from { opacity: 0; scale: 2.4; } to { opacity: .85; scale: 1; } }
+.burst { position: fixed; z-index: 60; pointer-events: none; color: var(--rose); font-size: 16px; line-height: 1; }
+#petals { position: fixed; inset: 0; z-index: 40; pointer-events: none; width: 100%; height: 100%; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
@@ -603,6 +630,7 @@ footer .hand { font-size: 26px; }
           <div><dt>距离</dt><dd>10,782 公里</dd></div>
         </dl>
         <p class="note">这是我最想登上的一班飞机。</p>
+        <div class="stamp" id="stamp" aria-hidden="true">CZX<b>等你</b>11.30</div>
       </article>
     </section>
 
@@ -827,6 +855,12 @@ footer .hand { font-size: 26px; }
       if (p < 1) requestAnimationFrame(step);
     }
     el.textContent = 1;
+    // the together / apart bar fills in step with the number
+    var sa = document.getElementById("splitA"), sb = document.getElementById("splitB");
+    var wa = sa.style.width, wb = sb.style.width;
+    sa.style.width = "0%"; sb.style.width = "0%";
+    void sa.offsetWidth;
+    sa.style.width = wa; sb.style.width = wb;
     requestAnimationFrame(step);
   }
 
@@ -902,6 +936,7 @@ footer .hand { font-size: 26px; }
           if (p.classList.contains("next")) setTimeout(function () { p.style.strokeDasharray = ""; }, 1100);
         }, i * 260);
       });
+      setTimeout(flyHome, paths.length * 260 + 1200);
     }, { threshold: 0.4 });
     mapIO.observe(mapBox);
 
@@ -919,6 +954,139 @@ footer .hand { font-size: 26px; }
       requestAnimationFrame(step);
     }, { threshold: 0.6 });
     kmIO.observe(document.getElementById("km"));
+  }
+
+  // a little plane flies the next trip, London → 深圳 → 常州, over and over
+  function flyHome() {
+    var legs = paths.filter(function (p) { return p.classList.contains("next"); });
+    var lens = legs.map(function (p) { return p.getTotalLength(); });
+    var total = lens[0] + lens[1];
+    var plane = el("path", { d: "M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z", "class": "plane" }, svg);
+    var home = svg.querySelector(".home");
+    function at(d) {
+      var i = d < lens[0] ? 0 : 1, s = i ? d - lens[0] : d;
+      return legs[i].getPointAtLength(Math.max(0, Math.min(lens[i], s)));
+    }
+    var t0 = null, FLY_MS = 5200, REST_MS = 1400;
+    function frame(ts) {
+      if (t0 === null) t0 = ts;
+      var k = (ts - t0) % (FLY_MS + REST_MS);
+      if (k < FLY_MS) {
+        var p = k / FLY_MS, e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        var d = e * total, a = at(d), b = at(Math.min(total, d + 2));
+        var ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI + 90;
+        plane.setAttribute("transform", "translate(" + a.x + " " + a.y + ") rotate(" + ang + ") scale(.55) translate(-12 -12)");
+        plane.style.opacity = 1;
+        home.setAttribute("r", 6);
+      } else {
+        plane.style.opacity = 0;
+        home.setAttribute("r", 6 + 4 * Math.sin(Math.PI * (k - FLY_MS) / REST_MS));
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // after landing, the stamp on the last boarding pass changes
+  if (Date.now() > GOAL_MOMENT) document.getElementById("stamp").innerHTML = "CZX<b>到了</b>21:55";
+
+  // scroll reveals: photos develop like prints, cards rise in, dots light up day by day
+  if ("IntersectionObserver" in window && !reduce) {
+    var targets = document.querySelectorAll(
+      "main .chap, main h3, main .photo, main .film, main .pass, main .cities > div, main .clocks, main .strip," +
+      " main .map, main .wish li, main .dm-card, main .daycard, main .toc li, main footer p");
+    targets.forEach(function (t) {
+      t.classList.add("rv");
+      var sib = Array.prototype.indexOf.call(t.parentNode.children, t);
+      t.style.transitionDelay = Math.min(sib, 4) * 90 + "ms";
+    });
+    var rvIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        rvIO.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+    targets.forEach(function (t) { rvIO.observe(t); });
+
+    grid.classList.add("pre");
+    Array.prototype.forEach.call(grid.children, function (d, i) { d.style.transitionDelay = i * 6 + "ms"; });
+    var gridIO = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      gridIO.disconnect();
+      grid.classList.remove("pre");
+      setTimeout(function () {
+        Array.prototype.forEach.call(grid.children, function (d) { d.style.transitionDelay = ""; });
+      }, grid.children.length * 6 + 500);
+    }, { threshold: 0.25 });
+    gridIO.observe(grid);
+
+    var earth = document.querySelector(".earth");
+    earth.classList.add("pre");
+    var earthIO = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      earthIO.disconnect();
+      earth.classList.remove("pre");
+    }, { threshold: 0.8 });
+    earthIO.observe(earth);
+
+    // rose petals fall once when she reaches the end
+    var footer = document.querySelector("footer");
+    var petalIO = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      petalIO.disconnect();
+      petals();
+    }, { threshold: 0.5 });
+    petalIO.observe(footer);
+  }
+
+  function petals() {
+    var cv = document.createElement("canvas");
+    cv.id = "petals";
+    document.body.appendChild(cv);
+    var ctx = cv.getContext("2d"), dpr = window.devicePixelRatio || 1;
+    var W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; ctx.scale(dpr, dpr);
+    var cs = getComputedStyle(document.documentElement);
+    var cols = [cs.getPropertyValue("--rose").trim(), cs.getPropertyValue("--rose-soft").trim(), "#eaa3b1"];
+    var ps = [];
+    for (var i = 0; i < 46; i++) ps.push({
+      x: Math.random() * W, y: -20 - Math.random() * H * .6, r: 5 + Math.random() * 6,
+      vy: 1 + Math.random() * 1.4, sw: Math.random() * 6.28, rot: Math.random() * 6.28, c: cols[i % 3]
+    });
+    var start = null, LIFE = 6500;
+    function draw(ts) {
+      if (start === null) start = ts;
+      var age = ts - start;
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalAlpha = age > LIFE - 1200 ? Math.max(0, (LIFE - age) / 1200) : 1;
+      ps.forEach(function (p) {
+        p.y += p.vy; p.sw += .03; p.rot += .02;
+        var x = p.x + Math.sin(p.sw) * 18;
+        ctx.save(); ctx.translate(x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.c; ctx.beginPath(); ctx.ellipse(0, 0, p.r, p.r * .6, 0, 0, 6.283); ctx.fill();
+        ctx.restore();
+      });
+      if (age < LIFE) requestAnimationFrame(draw); else cv.remove();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  // a small burst of hearts when she ticks something off
+  function heartBurst(box) {
+    if (reduce || !box.animate) return;
+    var r = box.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (var i = 0; i < 9; i++) {
+      var h = document.createElement("span");
+      h.className = "burst"; h.textContent = "♥";
+      h.style.left = cx - 8 + "px"; h.style.top = cy - 8 + "px";
+      document.body.appendChild(h);
+      var a = i / 9 * 6.283 + Math.random() * .4, dist = 34 + Math.random() * 26;
+      h.animate([
+        { transform: "translate(0,0) scale(.4)", opacity: 1 },
+        { transform: "translate(" + Math.cos(a) * dist + "px," + Math.sin(a) * dist + "px) scale(1)", opacity: 0 }
+      ], { duration: 800 + Math.random() * 300, easing: "cubic-bezier(.2,.7,.2,1)" }).onfinish = (function (n) { return function () { n.remove(); }; })(h);
+    }
   }
 
   // page videos play when on screen
@@ -947,6 +1115,7 @@ footer .hand { font-size: 26px; }
     b.addEventListener("change", function () {
       saved[b.id] = b.checked;
       try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+      if (b.checked) heartBurst(b.nextElementSibling);
       updateDone();
     });
   });
