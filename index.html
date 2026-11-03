@@ -284,7 +284,7 @@ img, video { max-width: 100%; display: block; }
 .pass .note { position: relative; margin: 0; padding: 12px 16px 14px; border-top: 2px dashed var(--paper-2); font-family: var(--f-hand); font-size: 19px; }
 .pass .note::before, .pass .note::after { content: ""; position: absolute; top: -9px; width: 16px; height: 16px; border-radius: 50%; background: var(--paper); }
 .pass .note::before { left: -8px; } .pass .note::after { right: -8px; }
-.pass.final header { background: var(--rose); }
+.pass.final header, .pass.with header { background: var(--rose); }
 .pass.final .note { color: var(--rose); }
 .fields { margin: 0; padding: 8px 16px 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 10px; border-top: 1px dashed var(--paper-2); }
 .fields dt { font-size: 11px; letter-spacing: .1em; color: var(--ink-soft); }
@@ -471,6 +471,43 @@ footer .hand { font-size: 26px; }
 
     <h3>日常</h3>
     <div class="film"><video src="clip1.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+
+    <h3>你毕业了</h3>
+    <article class="pass with">
+      <header><span class="pl">BOARDING PASS</span><span class="pt">飞去看你毕业 · 上海</span><span class="pd">7.3 – 7.5</span></header>
+      <ol class="legs">
+        <li><span class="code">HO1292</span><span class="route">香港 → 上海</span><span class="time">7.3 20:45</span></li>
+        <li><span class="code">MU721</span><span class="route">上海 → 香港</span><span class="time">7.5 08:15</span></li>
+      </ol>
+      <p class="note">从香港飞过去，就为了看你穿上学位服。</p>
+    </article>
+    <div class="duo even">
+      <div class="photo"><img src="grad1.jpg" alt="穿着复旦学位服比耶的小白" loading="lazy"></div>
+      <div class="photo"><img src="grad2.jpg" alt="小白伸手比耶" loading="lazy"></div>
+    </div>
+    <div class="duo even">
+      <div class="photo"><img src="grad3.jpg" alt="小白用手比心" loading="lazy"></div>
+      <div class="photo"><img src="grad4.jpg" alt="小白张开双手大笑" loading="lazy"></div>
+    </div>
+    <p class="hand">复旦毕业的小白，是我见过最闪闪发光的样子。</p>
+
+    <h3>巴厘岛</h3>
+    <article class="pass with">
+      <header><span class="pl">BOARDING PASS</span><span class="pt">一起去巴厘岛</span><span class="pd">8.15 – 8.19</span></header>
+      <ol class="legs">
+        <li><span class="code">CX785</span><span class="route">香港 → 巴厘岛</span><span class="time">8.15 10:00</span></li>
+        <li><span class="code">CX784</span><span class="route">巴厘岛 → 香港</span><span class="time">8.19 16:15</span></li>
+      </ol>
+      <p class="note">去伦敦前的最后 5 天，我们在海边。</p>
+    </article>
+    <div class="wide photo"><img src="bali-hug.jpg" alt="日落时在沙滩上抱起小白" loading="lazy"></div>
+    <p class="hand">日落的时候，把你抱起来。</p>
+    <div class="duo">
+      <div class="photo"><img src="bali-sunset.jpg" alt="两个人坐在沙滩上看日落" loading="lazy"></div>
+      <div class="photo"><img src="bali-pool.jpg" alt="泳池边举着小黄狗" loading="lazy"></div>
+    </div>
+    <div class="film"><video src="bali.mp4#t=0.1" muted loop playsinline preload="metadata" controls></video></div>
+    <p class="hand">小黄狗也跟着我们去了巴厘岛。第二天，我就飞去了伦敦。</p>
   </section>
 
   <!-- 2 · 小白 -->
@@ -681,7 +718,10 @@ footer .hand { font-size: 26px; }
   var notes = {
     1: "第一天。从这里开始数",
     100: "第 100 天",
-    175: "去伦敦前的最后一天",
+    128: "HO1292 飞去上海，看你毕业",
+    130: "MU721 从上海飞回香港",
+    171: "CX785 一起出发去巴厘岛",
+    175: "巴厘岛的最后一天。明天我就去伦敦了",
     176: "CZ673 北京大兴 → 伦敦，去上学了",
     210: "CA852 从伦敦起飞，回来见你",
     211: "清早落地北京，晚上和你一起飞延吉",
@@ -695,7 +735,7 @@ footer .hand { font-size: 26px; }
     277: "ZH888 21:10 从伦敦起飞",
     278: "21:55 落地常州 · 见面"
   };
-  var FLY = { 176: 1, 210: 1, 211: 1, 217: 1, 234: 1, 235: 1, 239: 1, 242: 1, 243: 1, 277: 1, 278: 1 };
+  var FLY = { 128: 1, 130: 1, 171: 1, 175: 1, 176: 1, 210: 1, 211: 1, 217: 1, 234: 1, 235: 1, 239: 1, 242: 1, 243: 1, 277: 1, 278: 1 };
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function shanghaiToday() {
